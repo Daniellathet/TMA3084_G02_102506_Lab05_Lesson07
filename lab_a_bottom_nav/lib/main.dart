@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'screen1.dart';
 import 'screen2.dart';
@@ -9,29 +10,37 @@ void main() {
   runApp(const MyApp());
 }
 
+class TabModel extends ChangeNotifier {
+  int _selectedIndex = 0;
+
+  int get selectedIndex => _selectedIndex;
+
+  void selectTab(int index) {
+    if (index == _selectedIndex) return;
+    _selectedIndex = index;
+    notifyListeners();
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Lab 05 Lab A',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
-      home: const MainNavigation(),
+    return ChangeNotifierProvider(
+      create: (_) => TabModel(),
+      child: MaterialApp(
+        title: 'Lab 05 Lab A',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
+        home: const MainNavigation(),
+      ),
     );
   }
 }
 
-class MainNavigation extends StatefulWidget {
+class MainNavigation extends StatelessWidget {
   const MainNavigation({super.key});
-
-  @override
-  State<MainNavigation> createState() => _MainNavigationState();
-}
-
-class _MainNavigationState extends State<MainNavigation> {
-  int _selectedIndex = 0;
 
   static const List<Widget> _screens = [
     Screen1(),
@@ -40,21 +49,17 @@ class _MainNavigationState extends State<MainNavigation> {
     Screen4(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = context.watch<TabModel>().selectedIndex;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Lab 05 - Lab A')),
-      body: _screens[_selectedIndex],
+      body: _screens[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        currentIndex: selectedIndex,
+        onTap: (index) => context.read<TabModel>().selectTab(index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.alarm), label: 'Alarm'),
